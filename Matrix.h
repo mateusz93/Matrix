@@ -41,8 +41,6 @@ void rewrite(double**, double**, int, int);
 
 class Matrix::DataMatrix
 {
-//    DataMatrix(const DataMatrix&);
-//    DataMatrix& operator=(const DataMatrix&);
     friend class Matrix;
 public:
     int howManyObjects, x, y;
@@ -50,7 +48,6 @@ public:
 
     DataMatrix(int x, int y)
     {
-        howManyObjects = 1;
         this->x = x;
         this->y = y;
         try
@@ -58,6 +55,7 @@ public:
             tab = new double* [x];
             for(int i = 0; i < x; ++i)
                 tab[i] = new double [y];
+            howManyObjects = 1;
         }
         catch(bad_alloc&)
         {
@@ -75,9 +73,12 @@ public:
             tab = new double* [x];
             for(int i = 0; i < x; ++i)
                 tab[i] = new double [y];
-                for(int i = 0; i < x; ++i)
-            for(int j = 0; j < y; ++j)
-                file>>tab[i][j];
+
+            for(int i = 0; i < x; ++i)
+                for(int j = 0; j < y; ++j)
+                    file>>tab[i][j];
+
+            howManyObjects = 1;
         file.close();
         }
         catch(bad_alloc&)
@@ -91,7 +92,7 @@ public:
     };
     DataMatrix* detach()
     {
-        if(howManyObjects == 1)
+        if(howManyObjects <= 1)
             return this;
         --howManyObjects;
         try

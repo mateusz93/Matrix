@@ -18,8 +18,7 @@ int main()
             cout<<"Macierz A:\n"<<A<<endl;
             cout<<"Macierz B:\n"<<B<<endl;
             D = A * B;
-            cout<<"Macierz D = A x B:"<<endl;
-            cout<<D<<endl;
+            cout<<"Macierz D = A x B:"<<endl<<D<<endl;
             A *= B;
             cout<<"Macierz A *= B\n"<<A<<endl;
         }

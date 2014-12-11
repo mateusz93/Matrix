@@ -31,8 +31,8 @@ Matrix::Matrix(const Matrix& A)
 
 Matrix::~Matrix()
 {
-    if(--data->howManyObjects <= 0)
-        freeMemory(data->tab, data->x);
+    if(--data->howManyObjects == 0)
+        delete data;
 }
 
 Matrix Matrix::operator+(const Matrix& A) const
@@ -74,8 +74,9 @@ Matrix Matrix::operator*(const Matrix& A) const
 
 Matrix& Matrix::operator=(const Matrix& A)
 {
-    if(this == &A) return *this;
     A.data->howManyObjects++;
+    if(--data->howManyObjects == 0)
+        delete data;
     data = A.data;
     return *this;
 }
@@ -83,40 +84,22 @@ Matrix& Matrix::operator=(const Matrix& A)
 Matrix& Matrix::operator+=(const Matrix& A)
 {
     if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
-    if(data->howManyObjects == 1)
-    {
-        for(int i = 0; i < data->x; ++i)
-            for(int j = 0; j < data->y; ++j)
-                data->tab[i][j] += A.data->tab[i][j];
-    }
-    else
-    {
-        --data->howManyObjects;
-        data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
-        for(int i = 0; i < data->x; ++i)
-            for(int j = 0; j < data->y; ++j)
-                data->tab[i][j] += A.data->tab[i][j];
-    }
+    data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            data->tab[i][j] += A.data->tab[i][j];
+
     return *this;
 }
 
 Matrix& Matrix::operator-=(const Matrix& A)
 {
     if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
-    if(data->howManyObjects == 1)
-    {
-        for(int i = 0; i < data->x; ++i)
-            for(int j = 0; j < data->y; ++j)
-                data->tab[i][j] -= A.data->tab[i][j];
-    }
-    else
-    {
-        --data->howManyObjects;
-        data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
-        for(int i = 0; i < data->x; ++i)
-            for(int j = 0; j < data->y; ++j)
-                data->tab[i][j] -= A.data->tab[i][j];
-    }
+    data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            data->tab[i][j] -= A.data->tab[i][j];
+
     return *this;
 }
 
@@ -134,7 +117,6 @@ Matrix& Matrix::operator*=(const Matrix& A)
             C.data->tab[i][j] = s;
         }
     }
-    --data->howManyObjects;
     data->detach();       // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
     *this = C;
     return *this;
@@ -154,7 +136,7 @@ Matrix::MatrixReadWrite Matrix::operator()(const int x, const int y)
 
 void Matrix::checkSize(int i, int j) const
 {
-    if(data->x < i || data->y < j)
+    if(data->x <= i || data->y <= j)
         throw WrongSize();
 }
 
@@ -184,7 +166,7 @@ bool Matrix::readFromFile(char const* fileName)
     file.open(fileName);
     if(!file.good()) throw FileOpen();
     file>>data->x>>data->y;
-    --data->howManyObjects;
+    data->detach();
     try
     {
         data = new DataMatrix(data->x, data->y);
