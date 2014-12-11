@@ -5,194 +5,176 @@
 
 using namespace std;
 
-int Matrix::counter = 0; // musi byc zdefiniowana poza definicja klasy
-
-Matrix::Matrix(int x, int y)
-{
-    this->x = x;
-    this->y = y;
-    try
-    {
-        tab = new double* [x];
-        for(int i = 0; i < x; ++i)
-            tab[i] = new double [y];
-    }
-    catch(bad_alloc&)
-    {
-        cout<<"Blad przy alokacji pamieci!"<<endl;
-    }
-    ++counter;
-}
-
-Matrix::Matrix(char const* fileName)
-{
-    ifstream file;
-    file.open(fileName);
-    if(!file.good()) throw FileOpen();
-    file>>x>>y;
-    try
-    {
-        tab = new double* [x];
-        for(int i = 0; i < x; ++i)
-            tab[i] = new double [y];
-    }
-    catch(bad_alloc&)
-    {
-        cout<<"Blad przy alokacji pamieci!"<<endl;
-    }
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            file>>tab[i][j];
-    file.close();
-    ++counter;
-}
-
-void freeMemory(double** tab, int x, int y)
+/* function for disallocation memory */
+void freeMemory(double** tab, int x)
 {
     for(int i = 0; i < x; ++i)
         delete [] tab[i];
     delete [] tab;
 }
 
+Matrix::Matrix(int x, int y)
+{
+    data = new DataMatrix(x, y);
+}
+
+Matrix::Matrix(char const* fileName)
+{
+    data = new DataMatrix(fileName);
+}
+
+Matrix::Matrix(const Matrix& A)
+{
+    A.data->howManyObjects++;
+    data = A.data;
+}
+
 Matrix::~Matrix()
 {
-    freeMemory(tab, x, y);
-    --counter;
+    if(--data->howManyObjects <= 0)
+        freeMemory(data->tab, data->x);
 }
 
-Matrix::Matrix(const Matrix& macierz)
+Matrix Matrix::operator+(const Matrix& A) const
 {
-    x = macierz.x;
-    y = macierz.y;
-    try
-    {
-        tab = new double* [x];
-        for(int i = 0; i < x; ++i)
-            tab[i] = new double [y];
-    }
-    catch(bad_alloc&)
-    {
-        cout<<"Blad przy alokacji pamieci!"<<endl;
-    }
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            tab[i][j] = macierz.tab[i][j];
-}
-
-Matrix Matrix::operator+(const Matrix& macierz) const
-{
-    if(x != macierz.x || y != macierz.y) throw WrongSize();
-    Matrix temp = *this;
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            temp.tab[i][j] += macierz.tab[i][j];
+    if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
+    Matrix temp(data->x, data->y);
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            temp.data->tab[i][j] += A.data->tab[i][j];
     return temp;
 }
 
-Matrix Matrix::operator-(const Matrix& macierz) const
+Matrix Matrix::operator-(const Matrix& A) const
 {
-    if(x != macierz.x || y != macierz.y) throw WrongSize();
-    Matrix temp = *this;
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            temp.tab[i][j] -= macierz.tab[i][j];
+    if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
+    Matrix temp(data->x, data->y);
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            temp.data->tab[i][j] -= A.data->tab[i][j];
     return temp;
 }
 
-Matrix Matrix::operator*(const Matrix& macierz) const
+Matrix Matrix::operator*(const Matrix& A) const
 {
-    if(y != macierz.x) throw WrongSize();
-    Matrix C(x, macierz.y);
+    if(data->y != A.data->x) throw WrongSize();
+    Matrix C(data->x, A.data->y);
     double s;
-    for(int i = 0; i < x; ++i)
+    for(int i = 0; i < data->x; ++i)
     {
-        for(int j = 0; j < macierz.y; ++j)
+        for(int j = 0; j < A.data->y; ++j)
         {
-            for(int k = s = 0; k < y; ++k)
-                s += tab[i][k] * macierz.tab[k][j];
-            C.tab[i][j] = s;
+            for(int k = s = 0; k < data->y; ++k)
+                s += data->tab[i][k] * A.data->tab[k][j];
+            C.data->tab[i][j] = s;
         }
     }
     return C;
 }
 
-Matrix& Matrix::operator=(const Matrix& macierz)
+Matrix& Matrix::operator=(const Matrix& A)
 {
-    if(this == &macierz) return *this;
-    if(x != macierz.x || y != macierz.y)
+    if(this == &A) return *this;
+    A.data->howManyObjects++;
+    data = A.data;
+    return *this;
+}
+
+Matrix& Matrix::operator+=(const Matrix& A)
+{
+    if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
+    if(data->howManyObjects == 1)
     {
-        freeMemory(tab, x, y);
-        try
-        {
-            tab = new double* [macierz.x];
-            for(int i = 0; i < macierz.x; ++i)
-                tab[i] = new double [macierz.y];
-        }
-        catch(bad_alloc&)
-        {
-            cout<<"Blad przy alokacji pamieci!"<<endl;
-        }
+        for(int i = 0; i < data->x; ++i)
+            for(int j = 0; j < data->y; ++j)
+                data->tab[i][j] += A.data->tab[i][j];
     }
-    x = macierz.x;
-    y = macierz.y;
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            tab[i][j] = macierz.tab[i][j];
+    else
+    {
+        --data->howManyObjects;
+        data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
+        for(int i = 0; i < data->x; ++i)
+            for(int j = 0; j < data->y; ++j)
+                data->tab[i][j] += A.data->tab[i][j];
+    }
     return *this;
 }
 
-Matrix& Matrix::operator+=(const Matrix& macierz)
+Matrix& Matrix::operator-=(const Matrix& A)
 {
-    if(x != macierz.x || y != macierz.y) throw WrongSize();
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            tab[i][j] += macierz.tab[i][j];
+    if(data->x != A.data->x || data->y != A.data->y) throw WrongSize();
+    if(data->howManyObjects == 1)
+    {
+        for(int i = 0; i < data->x; ++i)
+            for(int j = 0; j < data->y; ++j)
+                data->tab[i][j] -= A.data->tab[i][j];
+    }
+    else
+    {
+        --data->howManyObjects;
+        data->detach();           // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
+        for(int i = 0; i < data->x; ++i)
+            for(int j = 0; j < data->y; ++j)
+                data->tab[i][j] -= A.data->tab[i][j];
+    }
     return *this;
 }
 
-Matrix& Matrix::operator-=(const Matrix& macierz)
+Matrix& Matrix::operator*=(const Matrix& A)
 {
-    if(x != macierz.x || y != macierz.y) throw WrongSize();
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            tab[i][j] -= macierz.tab[i][j];
-    return *this;
-}
-
-Matrix& Matrix::operator*=(const Matrix& macierz)
-{
-    if(y != macierz.x) throw WrongSize();
-    Matrix C(x, macierz.y);
+    if(data->y != A.data->x) throw WrongSize();
+    Matrix C(data->x, A.data->y);
     double s;
-    for(int i = 0; i < x; ++i)
+    for(int i = 0; i < data->x; ++i)
     {
-        for(int j = 0; j < macierz.y; ++j)
+        for(int j = 0; j < A.data->y; ++j)
         {
-            for(int k = s = 0; k < y; ++k)
-                s += tab[i][k] * macierz.tab[k][j];
-            C.tab[i][j] = s;
+            for(int k = s = 0; k < data->y; ++k)
+                s += data->tab[i][k] * A.data->tab[k][j];
+            C.data->tab[i][j] = s;
         }
     }
+    --data->howManyObjects;
+    data->detach();       // odlaczenie wskaznika, zaalokowanie pamieci i przepisanie starej zawartosci
     *this = C;
     return *this;
 }
 
-double& Matrix::operator()(const int x, const int y)
-{
-    return tab[x][y];
-}
-
 double Matrix::operator()(const int x, const int y) const
 {
-    return tab[x][y];
+    check(x, y);
+    return data->tab[x][y];
 }
 
-bool Matrix::operator==(const Matrix& macierz) const
+Matrix::MatrixReadWrite Matrix::operator()(const int x, const int y)
 {
-    if(x != macierz.x || y != macierz.y) return false;
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            if(tab[i][j] != macierz.tab[i][j]) return false;
+    check(x, y);
+    return MatrixReadWrite(*this, x, y);
+}
+
+void Matrix::check(int i, int j) const
+{
+    if(data->x != i || data->y != j)
+        throw WrongSize();
+}
+
+double Matrix::read(int x, int y) const
+{
+    return data->tab[x][y];
+}
+
+void Matrix::write(int x, int y, double value)
+{
+    data = data->detach();
+    data->tab[x][y] = value;
+}
+
+bool Matrix::operator==(const Matrix& A) const
+{
+    if(data->x != A.data->x || data->y != A.data->y) return false;
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            if(data->tab[i][j] != A.data->tab[i][j]) return false;
     return true;
 }
 
@@ -201,31 +183,21 @@ bool Matrix::readFromFile(char const* fileName)
     ifstream file;
     file.open(fileName);
     if(!file.good()) throw FileOpen();
-    freeMemory(tab, x, y);
-    file>>x>>y;
-    try
-    {
-        tab = new double* [x];
-        for(int i = 0; i < x; ++i)
-            tab[i] = new double [y];
-    }
-    catch(bad_alloc&)
-    {
-        cout<<"Blad przy alokacji pamieci!"<<endl;
-    }
-    for(int i = 0; i < x; ++i)
-        for(int j = 0; j < y; ++j)
-            file>>tab[i][j];
+    data->detach();
+    file>>data->x>>data->y;
+    for(int i = 0; i < data->x; ++i)
+        for(int j = 0; j < data->y; ++j)
+            file>>data->tab[i][j];
     file.close();
     return true;
 }
 
-ostream& operator<<(ostream& out, const Matrix& macierz)
+ostream& operator<<(ostream& out, const Matrix& A)
 {
-    for(int i = 0; i < macierz.x; ++i)
+    for(int i = 0; i < A.data->x; ++i)
     {
-        for(int j = 0; j < macierz.y; ++j)
-            out<<setw(6)<<macierz.tab[i][j];
+        for(int j = 0; j < A.data->y; ++j)
+            out<<setw(6)<<A.data->tab[i][j];
         out<<endl;
     }
     return out;
