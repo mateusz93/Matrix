@@ -5,7 +5,7 @@
 
 using namespace std;
 
-/* zaimplementowano referecne counting */
+/* nie zaimplementowano referecne counting */
 
 int main()
 {
