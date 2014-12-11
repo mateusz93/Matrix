@@ -183,13 +183,21 @@ bool Matrix::readFromFile(char const* fileName)
     ifstream file;
     file.open(fileName);
     if(!file.good()) throw FileOpen();
-    data->detach();
     file>>data->x>>data->y;
-    for(int i = 0; i < data->x; ++i)
-        for(int j = 0; j < data->y; ++j)
-            file>>data->tab[i][j];
-    file.close();
-    return true;
+    --data->howManyObjects;
+    try
+    {
+        data = new DataMatrix(data->x, data->y);
+        for(int i = 0; i < data->x; ++i)
+            for(int j = 0; j < data->y; ++j)
+                file>>data->tab[i][j];
+        file.close();
+        return true;
+    }
+    catch(bad_alloc &)
+    {
+        cout<<"Blad przy alokacji pamieci"<<endl;
+    }
 }
 
 ostream& operator<<(ostream& out, const Matrix& A)

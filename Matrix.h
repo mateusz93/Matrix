@@ -94,11 +94,18 @@ public:
         if(howManyObjects == 1)
             return this;
         --howManyObjects;
-        DataMatrix* t = new DataMatrix(x, y);
-        for(int i = 0; i < x; ++i)
-            for(int j = 0; j < y; ++j)
-                t->tab[i][j] = tab[i][j];
-        return t;
+        try
+        {
+            DataMatrix* t = new DataMatrix(x, y);
+            for(int i = 0; i < x; ++i)
+                for(int j = 0; j < y; ++j)
+                    t->tab[i][j] = tab[i][j];
+            return t;
+        }
+        catch(bad_alloc &)
+        {
+            cout<<"Blad przy alokacji pamieci"<<endl;
+        }
     };
 };
 
@@ -111,12 +118,12 @@ class Matrix::MatrixReadWrite
 public:
     operator double() const
     {
-        // cout << "operator char() const"<<endl;
+        // cout<<"operator double() const"<<endl;
         return tmp.read(x, y);
     }
     Matrix::MatrixReadWrite& operator=(double value)
     {
-        // cout << "void operator = (char c)"<<endl;
+        // cout<<"Matrix::MatrixReadWrite& operator=(double value)"<<endl;
         tmp.write(x, y, value);
         return *this;
     }
