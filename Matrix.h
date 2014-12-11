@@ -24,7 +24,7 @@ public:
     Matrix& operator+=(const Matrix&);
     Matrix& operator-=(const Matrix&);
     Matrix& operator*=(const Matrix&);
-    void check(int, int) const;
+    void checkSize(int, int) const;
     double read(int, int) const;
     void write(int, int, double);
     bool readFromFile(char const*);
@@ -75,15 +75,15 @@ public:
             tab = new double* [x];
             for(int i = 0; i < x; ++i)
                 tab[i] = new double [y];
+                for(int i = 0; i < x; ++i)
+            for(int j = 0; j < y; ++j)
+                file>>tab[i][j];
+        file.close();
         }
         catch(bad_alloc&)
         {
             cout<<"Blad przy alokacji pamieci!"<<endl;
         }
-        for(int i = 0; i < x; ++i)
-            for(int j = 0; j < y; ++j)
-                file>>tab[i][j];
-        file.close();
     }
     ~DataMatrix()
     {
@@ -118,12 +118,12 @@ class Matrix::MatrixReadWrite
 public:
     operator double() const
     {
-        // cout<<"operator double() const"<<endl;
+        cout<<"korzystam z 'operator double() const'"<<endl;
         return tmp.read(x, y);
     }
     Matrix::MatrixReadWrite& operator=(double value)
     {
-        // cout<<"Matrix::MatrixReadWrite& operator=(double value)"<<endl;
+        cout<<"korzystam z 'MatrixReadWrite& operator=(double value)'"<<endl;
         tmp.write(x, y, value);
         return *this;
     }

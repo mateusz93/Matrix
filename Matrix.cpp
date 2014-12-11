@@ -142,19 +142,19 @@ Matrix& Matrix::operator*=(const Matrix& A)
 
 double Matrix::operator()(const int x, const int y) const
 {
-    check(x, y);
+    checkSize(x, y);
     return data->tab[x][y];
 }
 
 Matrix::MatrixReadWrite Matrix::operator()(const int x, const int y)
 {
-    check(x, y);
+    checkSize(x, y);
     return MatrixReadWrite(*this, x, y);
 }
 
-void Matrix::check(int i, int j) const
+void Matrix::checkSize(int i, int j) const
 {
-    if(data->x != i || data->y != j)
+    if(data->x < i || data->y < j)
         throw WrongSize();
 }
 
