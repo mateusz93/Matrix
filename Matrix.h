@@ -5,8 +5,8 @@ using namespace std;
 class Matrix
 {
     /* class for store data */
-    class DataMatrix;
-    DataMatrix* data;
+    class MatrixData;
+    MatrixData* data;
 public:
     /* class for write and read */
     class MatrixReadWrite;
@@ -39,14 +39,14 @@ public:
 void freeMemory(double**, int);
 void rewrite(double**, double**, int, int);
 
-class Matrix::DataMatrix
+class Matrix::MatrixData
 {
     friend class Matrix;
 public:
     int howManyObjects, x, y;
     double** tab;
 
-    DataMatrix(int x, int y)
+    MatrixData(int x, int y)
     {
         this->x = x;
         this->y = y;
@@ -61,8 +61,8 @@ public:
         {
             cout<<"Blad przy alokowaniu pamieci"<<endl;
         }
-    };
-    DataMatrix(char const* fileName)
+    }
+    MatrixData(char const* fileName)
     {
         ifstream file;
         file.open(fileName);
@@ -86,18 +86,18 @@ public:
             cout<<"Blad przy alokacji pamieci!"<<endl;
         }
     }
-    ~DataMatrix()
+    ~MatrixData()
     {
         freeMemory(tab, x);
-    };
-    DataMatrix* detach()
+    }
+    MatrixData* detach()
     {
         if(howManyObjects <= 1)
             return this;
         --howManyObjects;
         try
         {
-            DataMatrix* t = new DataMatrix(x, y);
+            MatrixData* t = new MatrixData(x, y);
             for(int i = 0; i < x; ++i)
                 for(int j = 0; j < y; ++j)
                     t->tab[i][j] = tab[i][j];
@@ -107,7 +107,7 @@ public:
         {
             cout<<"Blad przy alokacji pamieci"<<endl;
         }
-    };
+    }
 };
 
 class Matrix::MatrixReadWrite

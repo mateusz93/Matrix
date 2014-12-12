@@ -15,12 +15,12 @@ void freeMemory(double** tab, int x)
 
 Matrix::Matrix(int x, int y)
 {
-    data = new DataMatrix(x, y);
+    data = new MatrixData(x, y);
 }
 
 Matrix::Matrix(char const* fileName)
 {
-    data = new DataMatrix(fileName);
+    data = new MatrixData(fileName);
 }
 
 Matrix::Matrix(const Matrix& A)
@@ -169,7 +169,7 @@ bool Matrix::readFromFile(char const* fileName)
     data->detach();
     try
     {
-        data = new DataMatrix(data->x, data->y);
+        data = new MatrixData(data->x, data->y);
         for(int i = 0; i < data->x; ++i)
             for(int j = 0; j < data->y; ++j)
                 file>>data->tab[i][j];
