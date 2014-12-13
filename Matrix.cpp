@@ -163,13 +163,20 @@ bool Matrix::operator==(const Matrix& A) const
 bool Matrix::readFromFile(char const* fileName)
 {
     ifstream file;
+    int newX, newY;
     file.open(fileName);
     if(!file.good()) throw FileOpen();
-    file>>data->x>>data->y;
-    data->detach();
+    data = data->detach();
+    file>>newX>>newY;
     try
     {
+<<<<<<< HEAD
         data = new MatrixData(data->x, data->y);
+=======
+    	//data memory should be free'd because you lose pointer to this
+    	delete data;
+        data = new DataMatrix(newX, newY);
+>>>>>>> cee5bffa727c366b610e8af02665d2f9e568a9de
         for(int i = 0; i < data->x; ++i)
             for(int j = 0; j < data->y; ++j)
                 file>>data->tab[i][j];
@@ -179,6 +186,7 @@ bool Matrix::readFromFile(char const* fileName)
     catch(bad_alloc &)
     {
         cout<<"Blad przy alokacji pamieci"<<endl;
+        return false;
     }
 }
 

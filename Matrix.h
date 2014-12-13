@@ -106,6 +106,8 @@ public:
         catch(bad_alloc &)
         {
             cout<<"Blad przy alokacji pamieci"<<endl;
+            howManyObjects++;
+            return this;
         }
     }
 };
