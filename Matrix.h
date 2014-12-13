@@ -28,6 +28,7 @@ public:
     double read(int, int) const;
     void write(int, int, double);
     bool readFromFile(char const*);
+    bool saveToFile(char const*);
     bool operator==(const Matrix&) const;
     double operator()(int, int) const;
     MatrixReadWrite operator()(int, int);
@@ -60,6 +61,7 @@ public:
         catch(bad_alloc&)
         {
             cout<<"Blad przy alokowaniu pamieci"<<endl;
+	    howManyObjects = 1;
         }
     }
     MatrixData(char const* fileName)
@@ -79,11 +81,13 @@ public:
                     file>>tab[i][j];
 
             howManyObjects = 1;
-        file.close();
+	    file.close();
         }
         catch(bad_alloc&)
         {
             cout<<"Blad przy alokacji pamieci!"<<endl;
+	    howManyObjects = 1;
+	    file.close();
         }
     }
     ~MatrixData()

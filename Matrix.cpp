@@ -170,13 +170,8 @@ bool Matrix::readFromFile(char const* fileName)
     file>>newX>>newY;
     try
     {
-<<<<<<< HEAD
-        data = new MatrixData(data->x, data->y);
-=======
-    	//data memory should be free'd because you lose pointer to this
-    	delete data;
-        data = new DataMatrix(newX, newY);
->>>>>>> cee5bffa727c366b610e8af02665d2f9e568a9de
+        delete data;
+        data = new MatrixData(newX, newY);
         for(int i = 0; i < data->x; ++i)
             for(int j = 0; j < data->y; ++j)
                 file>>data->tab[i][j];
@@ -186,8 +181,24 @@ bool Matrix::readFromFile(char const* fileName)
     catch(bad_alloc &)
     {
         cout<<"Blad przy alokacji pamieci"<<endl;
+        file.close();
         return false;
     }
+}
+
+bool Matrix::saveToFile(char const* fileName)
+{
+    ofstream file;
+    file.open(fileName, ios::out);
+    if(!file.good()) throw FileOpen();
+    file<<data->x<<" "<<data->y<<"\n";
+    for(int i = 0; i < data->x; ++i)
+    {
+        for(int j = 0; j < data->y; ++j)
+            file<<data->tab[i][j]<<" ";
+        file<<"\n";
+    }
+    return true;
 }
 
 ostream& operator<<(ostream& out, const Matrix& A)
